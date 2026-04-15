@@ -50,9 +50,8 @@ function Welcome() {
     <div className="island-shell rounded-2xl p-8 text-center">
       <div
         className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full"
-        style={{ background: 'var(--lagoon)' }}
       >
-        <Mic size={32} className="text-white" />
+        <img src="/mascot.webp" />
       </div>
       <h1 className="display-title mb-3 text-3xl font-bold" style={{ color: 'var(--sea-ink)' }}>
         Yaps.at
