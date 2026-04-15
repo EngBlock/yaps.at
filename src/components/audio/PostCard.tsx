@@ -47,6 +47,13 @@ export function PostCard({ post }: PostCardProps) {
       ['postThread', post.uri],
       feedEntryToThreadResponse(post),
     )
+    // The seed only contains the post — replies are missing. Mark the query
+    // stale so when the detail page mounts it refetches in the background and
+    // the replies appear without a manual refresh.
+    void queryClient.invalidateQueries({
+      queryKey: ['postThread', post.uri],
+      refetchType: 'none',
+    })
   }
 
   return (
