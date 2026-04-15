@@ -1,0 +1,12 @@
+diff --git a/package.json b/package.json
+index 3dafcbc6c5c47dc87116371c11308cab48a178d6..64f4f60da64f750f3fd321c67c6e3a37c56c47e7 100644
+--- a/package.json
++++ b/package.json
+@@ -39,6 +39,7 @@
+       "types": "./dist/index.d.ts",
+       "default": "./dist/index.js"
+     },
++    "./bin/oxfmt": "./bin/oxfmt",
+     "./package.json": "./package.json"
+   },
+   "dependencies": {

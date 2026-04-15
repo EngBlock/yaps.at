@@ -1,0 +1,12 @@
+{
+  "client_id": "https://app.yaps.at/client-metadata.json",
+  "client_name": "Yaps.at",
+  "client_uri": "https://app.yaps.at",
+  "redirect_uris": ["https://app.yaps.at/auth/callback"],
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "scope": "atproto transition:generic blob:audio/*",
+  "token_endpoint_auth_method": "none",
+  "application_type": "web",
+  "dpop_bound_access_tokens": true
+}

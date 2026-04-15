@@ -1,0 +1,118 @@
+{
+  "lexicon": 1,
+  "id": "at.yaps.audio.defs",
+  "description": "Shared definitions for Yaps audio types.",
+  "defs": {
+    "postView": {
+      "type": "object",
+      "description": "Hydrated view of a voice post, as returned by appview queries.",
+      "required": ["uri", "cid", "author", "record", "indexedAt"],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "at-uri"
+        },
+        "cid": {
+          "type": "string",
+          "format": "cid"
+        },
+        "author": {
+          "type": "ref",
+          "ref": "#actorBasic"
+        },
+        "record": {
+          "type": "unknown",
+          "description": "The at.yaps.audio.post record."
+        },
+        "likeCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "replyCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "indexedAt": {
+          "type": "string",
+          "format": "datetime"
+        },
+        "viewer": {
+          "type": "ref",
+          "ref": "#viewerState"
+        }
+      }
+    },
+    "actorBasic": {
+      "type": "object",
+      "description": "Basic profile information for a user.",
+      "required": ["did", "handle"],
+      "properties": {
+        "did": {
+          "type": "string",
+          "format": "did"
+        },
+        "handle": {
+          "type": "string",
+          "format": "handle"
+        },
+        "displayName": {
+          "type": "string",
+          "maxGraphemes": 64,
+          "maxLength": 640
+        },
+        "avatar": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "viewerState": {
+      "type": "object",
+      "description": "State for the authenticated viewer of a post.",
+      "properties": {
+        "like": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "URI of the viewer's like record, if they liked this post."
+        }
+      }
+    },
+    "threadViewPost": {
+      "type": "object",
+      "description": "A post within a thread view, with nested replies.",
+      "required": ["post"],
+      "properties": {
+        "post": {
+          "type": "ref",
+          "ref": "#postView"
+        },
+        "parent": {
+          "type": "union",
+          "refs": ["#threadViewPost", "#notFoundPost"]
+        },
+        "replies": {
+          "type": "array",
+          "items": {
+            "type": "union",
+            "refs": ["#threadViewPost", "#notFoundPost"]
+          }
+        }
+      }
+    },
+    "notFoundPost": {
+      "type": "object",
+      "description": "Placeholder for a post that could not be found.",
+      "required": ["uri", "notFound"],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "at-uri"
+        },
+        "notFound": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    }
+  }
+}

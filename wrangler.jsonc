@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yapsat",
+  "compatibility_date": "2025-09-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  },
+  "vars": {
+    "VITE_OAUTH_REDIRECT_URI": "https://app.yaps.at/auth/callback",
+    "VITE_APPVIEW_URL": "https://yapsat-appview-production.up.railway.app"
+  }
+}

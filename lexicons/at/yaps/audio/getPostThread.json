@@ -1,0 +1,51 @@
+{
+  "lexicon": 1,
+  "id": "at.yaps.audio.getPostThread",
+  "description": "Retrieve a voice post and its reply thread.",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "Returns a voice post with its threaded voice replies.",
+      "parameters": {
+        "type": "params",
+        "required": ["uri"],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "AT-URI of the post to retrieve."
+          },
+          "depth": {
+            "type": "integer",
+            "description": "How many levels of replies to include.",
+            "minimum": 0,
+            "maximum": 10,
+            "default": 3
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["thread"],
+          "properties": {
+            "thread": {
+              "type": "union",
+              "refs": [
+                "at.yaps.audio.defs#threadViewPost",
+                "at.yaps.audio.defs#notFoundPost"
+              ]
+            }
+          }
+        }
+      },
+      "errors": [
+        {
+          "name": "NotFound",
+          "description": "The requested post was not found."
+        }
+      ]
+    }
+  }
+}
