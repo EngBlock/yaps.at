@@ -20,7 +20,7 @@ export function RecordButton({ state, duration, onStart, onStop }: RecordButtonP
           style={{ background: 'var(--lagoon)', opacity: 0.6 }}
         >
           <img
-            src="/mascot.png"
+            src="/mascot.webp"
             alt=""
             className="h-16 w-16 object-contain opacity-60"
             draggable={false}
@@ -48,7 +48,7 @@ export function RecordButton({ state, duration, onStart, onStop }: RecordButtonP
           style={{ background: 'var(--lagoon-deep)' }}
         >
           <img
-            src="/mascot.png"
+            src="/mascot.webp"
             alt=""
             className="h-16 w-16 object-contain"
             draggable={false}
@@ -76,7 +76,7 @@ export function RecordButton({ state, duration, onStart, onStop }: RecordButtonP
         style={{ background: 'var(--lagoon)' }}
       >
         <img
-          src="/mascot.png"
+          src="/mascot.webp"
           alt=""
           className="h-16 w-16 object-contain transition-opacity group-hover:opacity-100"
           draggable={false}
