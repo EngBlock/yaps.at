@@ -5,7 +5,7 @@
   "redirect_uris": ["https://app.yaps.at/auth/callback"],
   "grant_types": ["authorization_code", "refresh_token"],
   "response_types": ["code"],
-  "scope": "atproto transition:generic repo:at.yaps.audio.post repo:at.yaps.audio.like blob:audio/*",
+  "scope": "atproto repo:at.yaps.audio.post?action=create repo:at.yaps.audio.like?action=create repo:at.yaps.audio.like?action=delete blob:audio/*",
   "token_endpoint_auth_method": "none",
   "application_type": "web",
   "dpop_bound_access_tokens": true

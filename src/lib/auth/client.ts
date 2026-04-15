@@ -1,7 +1,7 @@
 import type { BrowserOAuthClient } from '@atproto/oauth-client-browser'
 
 const OAUTH_SCOPE =
-  'atproto repo:at.yaps.audio.post repo:at.yaps.audio.like blob:audio/*'
+  'atproto repo:at.yaps.audio.post?action=create repo:at.yaps.audio.like?action=create repo:at.yaps.audio.like?action=delete blob:audio/*'
 
 // Capture callback params at module load time, before the client-side router
 // can strip them from the URL during navigation.
