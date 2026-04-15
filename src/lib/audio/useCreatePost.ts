@@ -21,21 +21,24 @@ export function useCreatePost() {
       const { samples: waveform } = await computeWaveform(blob)
 
       const data = new Uint8Array(await blob.arrayBuffer())
-      const encoding = blob.type.split(';')[0]
+      const encoding = blob.type.split(';')[0] || 'audio/webm'
       const uploadResponse = await agent.com.atproto.repo.uploadBlob(data, {
         encoding,
         headers: {
           'Content-Type': encoding,
         },
       })
-      const blobRef = uploadResponse.data.blob
+      const audioBlob = uploadResponse.data.blob
+      // PDSes sniff the WebM container and may return mimeType "video/webm".
+      // Force it back to the declared audio type so the record validates.
+      audioBlob.mimeType = encoding
 
       const tid = generateTid()
 
       const record: Record<string, unknown> = {
         $type: 'at.yaps.audio.post',
-        audio: blobRef,
-        duration,
+        audio: audioBlob,
+        duration: Math.round(duration),
         waveform,
         createdAt: new Date().toISOString(),
       }
