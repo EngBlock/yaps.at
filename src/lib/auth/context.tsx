@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const client = await getOAuthClient()
     await client.signInRedirect(handle, {
       state: window.location.pathname,
-      scope: 'atproto blob:audio/*',
+      scope: 'atproto repo:at.yaps.audio.post repo:at.yaps.audio.like blob:audio/*',
     })
   }, [])
 
