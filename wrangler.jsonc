@@ -14,6 +14,7 @@
     }
   },
   "vars": {
+    "VITE_OAUTH_CLIENT_ID": "https://app.yaps.at/client-metadata.json",
     "VITE_OAUTH_REDIRECT_URI": "https://app.yaps.at/auth/callback",
     "VITE_APPVIEW_URL": "https://yapsat-appview-production.up.railway.app"
   }
