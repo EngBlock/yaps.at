@@ -8,12 +8,12 @@ import { PostCard } from './PostCard'
 import { formatDuration } from '#/lib/audio/format'
 import { usePostView } from '#/lib/audio/usePostView'
 import { useAuth } from '#/lib/auth/context'
-import { isNotFound } from '#/lib/audio/usePostThread'
+import { isNotFound, usePostThread } from '#/lib/audio/usePostThread'
 import type { ThreadViewPost } from '#/lib/audio/usePostThread'
 import type { AppviewPost } from '#/lib/audio/useGlobalFeed'
 
 interface PostDetailProps {
-  thread: ThreadViewPost
+  post: AppviewPost
 }
 
 function formatAbsoluteTime(iso: string): string {
@@ -40,8 +40,7 @@ async function shareOrCopy(url: string, title: string): Promise<'shared' | 'copi
   return 'copied'
 }
 
-export function PostDetail({ thread }: PostDetailProps) {
-  const post = thread.post
+export function PostDetail({ post }: PostDetailProps) {
   const view = usePostView(post)
   const { isAuthenticated } = useAuth()
   const [copied, setCopied] = useState(false)
@@ -54,10 +53,6 @@ export function PostDetail({ thread }: PostDetailProps) {
       window.setTimeout(() => setCopied(false), 2000)
     }
   }
-
-  const replies = (thread.replies ?? []).filter(
-    (r): r is ThreadViewPost => !isNotFound(r),
-  )
 
   return (
     <div className="flex flex-col gap-4">
@@ -138,13 +133,77 @@ export function PostDetail({ thread }: PostDetailProps) {
 
       <ReplyZone post={post} isAuthenticated={isAuthenticated} />
 
-      {replies.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {replies.map((reply) => (
-            <PostCard key={reply.post.uri} post={reply.post} />
-          ))}
+      <RepliesList parentUri={post.uri} expectedCount={post.reply_count} />
+    </div>
+  )
+}
+
+function RepliesList({
+  parentUri,
+  expectedCount,
+}: {
+  parentUri: string
+  expectedCount: number
+}) {
+  // Subscribe to the same thread query the route loader populated. No extra
+  // fetch — this just observes the cache and gives us live isFetching state.
+  const thread = usePostThread(parentUri)
+
+  const replies =
+    thread.data && !isNotFound(thread.data.thread)
+      ? (thread.data.thread.replies ?? []).filter(
+          (r): r is ThreadViewPost => !isNotFound(r),
+        )
+      : []
+
+  // How many skeleton placeholders to render. Cap at 3 to avoid a wall of
+  // skeletons on a high-engagement post.
+  const missing = Math.max(0, expectedCount - replies.length)
+  const skeletonCount = thread.isFetching ? Math.min(missing, 3) : 0
+
+  if (replies.length === 0 && skeletonCount === 0) return null
+
+  return (
+    <div className="flex flex-col gap-3">
+      {replies.map((reply) => (
+        <PostCard key={reply.post.uri} post={reply.post} />
+      ))}
+      {Array.from({ length: skeletonCount }).map((_, i) => (
+        <ReplySkeleton key={`skeleton-${i}`} />
+      ))}
+    </div>
+  )
+}
+
+function ReplySkeleton() {
+  return (
+    <div className="island-shell animate-pulse rounded-2xl p-4">
+      <div className="flex items-center gap-3">
+        <div
+          className="h-10 w-10 shrink-0 rounded-full"
+          style={{ background: 'var(--surface-strong)' }}
+        />
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div
+            className="h-8 flex-1 rounded"
+            style={{ background: 'var(--surface-strong)' }}
+          />
+          <div
+            className="h-3 w-10 rounded"
+            style={{ background: 'var(--surface-strong)' }}
+          />
         </div>
-      )}
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <div
+          className="h-3 w-20 rounded"
+          style={{ background: 'var(--surface-strong)' }}
+        />
+        <div
+          className="h-3 w-16 rounded"
+          style={{ background: 'var(--surface-strong)' }}
+        />
+      </div>
     </div>
   )
 }

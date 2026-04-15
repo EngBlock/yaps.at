@@ -88,7 +88,7 @@ function PostPage() {
           <NotFoundTombstone actor={actor} rkey={rkey} />
         )}
         {thread.data && !isNotFound(thread.data.thread) && (
-          <PostDetail thread={thread.data.thread} />
+          <PostDetail post={thread.data.thread.post} />
         )}
       </div>
     </main>
