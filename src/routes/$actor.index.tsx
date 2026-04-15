@@ -1,13 +1,11 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Agent } from '@atproto/api'
 import { ArrowLeft } from 'lucide-react'
 import { useAuthorFeed } from '#/lib/audio/useGlobalFeed'
 import { PostCard } from '#/components/audio/PostCard'
+import { publicAgent } from '#/lib/atproto/public-agent'
 
-const publicAgent = new Agent('https://public.api.bsky.app')
-
-export const Route = createFileRoute('/profile/$actor')({ component: ProfilePage })
+export const Route = createFileRoute('/$actor/')({ component: ProfilePage })
 
 function ProfilePage() {
   const { actor } = Route.useParams()

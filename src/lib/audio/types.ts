@@ -10,6 +10,10 @@ export interface ReplyRef {
   parent: StrongRef
 }
 
+/**
+ * Write-side record shape — uses @atproto/api's BlobRef class, which is what
+ * uploadBlob returns and createRecord expects.
+ */
 export interface AudioPostRecord {
   $type: 'at.yaps.audio.post'
   audio: BlobRef
@@ -17,26 +21,4 @@ export interface AudioPostRecord {
   waveform?: number[]
   reply?: ReplyRef
   createdAt: string
-}
-
-export interface ActorBasic {
-  did: string
-  handle: string
-  displayName?: string
-  avatar?: string
-}
-
-export interface ViewerState {
-  like?: string
-}
-
-export interface PostView {
-  uri: string
-  cid: string
-  author: ActorBasic
-  record: AudioPostRecord
-  likeCount?: number
-  replyCount?: number
-  indexedAt: string
-  viewer?: ViewerState
 }

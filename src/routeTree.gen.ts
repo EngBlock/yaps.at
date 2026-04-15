@@ -9,58 +9,88 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ActorRouteImport } from './routes/$actor'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ProfileActorRouteImport } from './routes/profile/$actor'
+import { Route as ActorIndexRouteImport } from './routes/$actor.index'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as ActorRkeyRouteImport } from './routes/$actor.$rkey'
 
+const ActorRoute = ActorRouteImport.update({
+  id: '/$actor',
+  path: '/$actor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileActorRoute = ProfileActorRouteImport.update({
-  id: '/profile/$actor',
-  path: '/profile/$actor',
-  getParentRoute: () => rootRouteImport,
+const ActorIndexRoute = ActorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ActorRoute,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ActorRkeyRoute = ActorRkeyRouteImport.update({
+  id: '/$rkey',
+  path: '/$rkey',
+  getParentRoute: () => ActorRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$actor': typeof ActorRouteWithChildren
+  '/$actor/$rkey': typeof ActorRkeyRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/profile/$actor': typeof ProfileActorRoute
+  '/$actor/': typeof ActorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$actor/$rkey': typeof ActorRkeyRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/profile/$actor': typeof ProfileActorRoute
+  '/$actor': typeof ActorIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$actor': typeof ActorRouteWithChildren
+  '/$actor/$rkey': typeof ActorRkeyRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/profile/$actor': typeof ProfileActorRoute
+  '/$actor/': typeof ActorIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth/callback' | '/profile/$actor'
+  fullPaths: '/' | '/$actor' | '/$actor/$rkey' | '/auth/callback' | '/$actor/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth/callback' | '/profile/$actor'
-  id: '__root__' | '/' | '/auth/callback' | '/profile/$actor'
+  to: '/' | '/$actor/$rkey' | '/auth/callback' | '/$actor'
+  id:
+    | '__root__'
+    | '/'
+    | '/$actor'
+    | '/$actor/$rkey'
+    | '/auth/callback'
+    | '/$actor/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActorRoute: typeof ActorRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
-  ProfileActorRoute: typeof ProfileActorRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/$actor': {
+      id: '/$actor'
+      path: '/$actor'
+      fullPath: '/$actor'
+      preLoaderRoute: typeof ActorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -68,12 +98,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profile/$actor': {
-      id: '/profile/$actor'
-      path: '/profile/$actor'
-      fullPath: '/profile/$actor'
-      preLoaderRoute: typeof ProfileActorRouteImport
-      parentRoute: typeof rootRouteImport
+    '/$actor/': {
+      id: '/$actor/'
+      path: '/'
+      fullPath: '/$actor/'
+      preLoaderRoute: typeof ActorIndexRouteImport
+      parentRoute: typeof ActorRoute
     }
     '/auth/callback': {
       id: '/auth/callback'
@@ -82,13 +112,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$actor/$rkey': {
+      id: '/$actor/$rkey'
+      path: '/$rkey'
+      fullPath: '/$actor/$rkey'
+      preLoaderRoute: typeof ActorRkeyRouteImport
+      parentRoute: typeof ActorRoute
+    }
   }
 }
 
+interface ActorRouteChildren {
+  ActorRkeyRoute: typeof ActorRkeyRoute
+  ActorIndexRoute: typeof ActorIndexRoute
+}
+
+const ActorRouteChildren: ActorRouteChildren = {
+  ActorRkeyRoute: ActorRkeyRoute,
+  ActorIndexRoute: ActorIndexRoute,
+}
+
+const ActorRouteWithChildren = ActorRoute._addFileChildren(ActorRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActorRoute: ActorRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,
-  ProfileActorRoute: ProfileActorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,16 +1,12 @@
-import { useEffect, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Agent } from '@atproto/api'
+import { ArrowUpRight } from 'lucide-react'
 import { SpeakingAvatar } from './SpeakingAvatar'
 import { WaveformDisplay } from './WaveformDisplay'
-import { getAudioBlobUrl } from '#/lib/audio/blob-url'
 import { formatDuration } from '#/lib/audio/format'
-import { resolvePdsUrl } from '#/lib/atproto/resolve-pds'
-import { useAudioPlayer } from '#/lib/audio/useAudioPlayer'
+import { usePostView } from '#/lib/audio/usePostView'
+import { feedEntryToThreadResponse } from '#/lib/audio/feedToPostView'
 import type { AppviewPost } from '#/lib/audio/useGlobalFeed'
-
-const publicAgent = new Agent('https://public.api.bsky.app')
 
 interface PostCardProps {
   post: AppviewPost
@@ -27,75 +23,60 @@ function timeAgo(dateStr: string): string {
   return `${days}d`
 }
 
+function parseRkey(uri: string): string {
+  const parts = uri.split('/')
+  return parts[parts.length - 1]
+}
+
 export function PostCard({ post }: PostCardProps) {
-  const { data: pdsUrl } = useQuery({
-    queryKey: ['pds', post.author_did],
-    queryFn: () => resolvePdsUrl(post.author_did),
-    staleTime: Infinity,
-  })
+  const queryClient = useQueryClient()
+  const view = usePostView(post)
+  const rkey = parseRkey(post.uri)
 
-  const { data: profile } = useQuery({
-    queryKey: ['profile', post.author_did],
-    queryFn: async () => {
-      const res = await publicAgent.app.bsky.actor.getProfile({
-        actor: post.author_did,
-      })
-      return res.data
-    },
-    staleTime: 5 * 60_000,
-  })
+  const timeLabel = view.isPlaying
+    ? formatDuration(view.currentMs)
+    : formatDuration(post.duration)
 
-  const audioSrc = pdsUrl ? getAudioBlobUrl(pdsUrl, post.author_did, post.blob_cid) : ''
-  const handle = profile?.handle ?? post.author_did.slice(0, 20) + '…'
-  const displayName = profile?.displayName || handle
-  const profileLinkTarget = profile?.handle ?? post.author_did
-
-  const { isPlaying, isBuffering, currentMs, progress, toggle, seek } =
-    useAudioPlayer(audioSrc, post.duration)
-
-  // Pending play intent queued while the audio element is still loading its
-  // source. Ensures a user who clicks before the DID/blob URL is ready doesn't
-  // need to click again.
-  const pendingPlayRef = useRef(false)
-
-  useEffect(() => {
-    if (pendingPlayRef.current && audioSrc) {
-      pendingPlayRef.current = false
-      toggle()
-    }
-  }, [audioSrc, toggle])
-
-  const handleAvatarToggle = () => {
-    if (!audioSrc) {
-      pendingPlayRef.current = true
-      return
-    }
-    toggle()
+  const handleOpenClick = () => {
+    if (!view.profile) return
+    // Cancel any in-flight fetch (hover-preload may have started one) before
+    // seeding the cache — otherwise the late fetch result overwrites our
+    // hydrated data and the component renders with stale shape.
+    void queryClient.cancelQueries({ queryKey: ['postThread', post.uri] })
+    queryClient.setQueryData(
+      ['postThread', post.uri],
+      feedEntryToThreadResponse(post),
+    )
   }
 
-  const waveformBars = post.waveform ?? Array(128).fill(30)
-  const timeLabel = isPlaying
-    ? formatDuration(currentMs)
-    : formatDuration(post.duration)
-  const pendingPlay = !audioSrc && pendingPlayRef.current
-
   return (
-    <div className="island-shell rounded-2xl p-4">
-      <div className="flex items-center gap-3">
+    <div className="island-shell relative rounded-2xl p-4">
+      <Link
+        to="/$actor/$rkey"
+        params={{ actor: view.profileLinkTarget, rkey }}
+        onClick={handleOpenClick}
+        aria-label="Open post"
+        className="absolute right-3 top-3 rounded p-1 no-underline hover:opacity-70"
+        style={{ color: 'var(--sea-ink-soft)' }}
+      >
+        <ArrowUpRight size={16} />
+      </Link>
+
+      <div className="flex items-center gap-3 pr-6">
         <SpeakingAvatar
-          avatarUrl={profile?.avatar}
-          displayName={displayName}
-          isPlaying={isPlaying}
-          isBuffering={isBuffering || pendingPlay}
-          onToggle={handleAvatarToggle}
+          avatarUrl={view.profile?.avatar}
+          displayName={view.displayName}
+          isPlaying={view.isPlaying}
+          isBuffering={view.isBuffering || view.pendingPlay}
+          onToggle={view.toggle}
         />
 
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="min-w-0 flex-1">
             <WaveformDisplay
-              waveform={waveformBars}
-              progress={progress}
-              onSeek={seek}
+              waveform={view.waveformBars}
+              progress={view.progress}
+              onSeek={view.audioSrc ? view.seek : undefined}
               shape="cone"
             />
           </div>
@@ -110,23 +91,25 @@ export function PostCard({ post }: PostCardProps) {
 
       <div className="mt-3 flex items-center gap-2 text-xs">
         <Link
-          to="/profile/$actor"
-          params={{ actor: profileLinkTarget }}
+          to="/$actor"
+          params={{ actor: view.profileLinkTarget }}
           className="font-semibold no-underline hover:underline"
           style={{ color: 'var(--sea-ink)' }}
         >
-          {displayName}
+          {view.displayName}
         </Link>
         <Link
-          to="/profile/$actor"
-          params={{ actor: profileLinkTarget }}
+          to="/$actor"
+          params={{ actor: view.profileLinkTarget }}
           className="no-underline hover:underline"
           style={{ color: 'var(--sea-ink-soft)' }}
         >
-          @{handle}
+          @{view.handle}
         </Link>
         <span style={{ color: 'var(--sea-ink-soft)' }}>·</span>
-        <span style={{ color: 'var(--sea-ink-soft)' }}>{timeAgo(post.created_at)}</span>
+        <span suppressHydrationWarning style={{ color: 'var(--sea-ink-soft)' }}>
+          {timeAgo(post.created_at)}
+        </span>
         {(post.like_count > 0 || post.reply_count > 0) && (
           <span className="ml-auto flex items-center gap-3" style={{ color: 'var(--sea-ink-soft)' }}>
             {post.like_count > 0 && <span>{post.like_count} likes</span>}
