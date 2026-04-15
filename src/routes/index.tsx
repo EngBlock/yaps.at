@@ -60,7 +60,7 @@ function Welcome() {
         Voice-first microblogging on the atmosphere.
       </p>
       <p className="text-sm" style={{ color: 'var(--sea-ink-soft)' }}>
-        Sign in with your Bluesky handle to record your own voice posts.
+        Sign in with your internet handle to record your own voice posts.
       </p>
     </div>
   )
