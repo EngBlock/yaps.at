@@ -11,7 +11,9 @@ export interface AppviewPost {
   duration: number
   waveform?: number[]
   reply_root?: string | null
+  reply_root_cid?: string | null
   reply_parent?: string | null
+  reply_parent_cid?: string | null
   created_at: string
   like_count: number
   reply_count: number
@@ -31,7 +33,9 @@ export function useGlobalFeed() {
       )
       if (!res.ok) throw new Error(`Feed fetch failed: ${res.status}`)
       const data: FeedResponse = await res.json()
-      return data.posts ?? []
+      // Stopgap: filter replies out of the global feed client-side until the
+      // appview filters them server-side from getFeed.
+      return (data.posts ?? []).filter((p) => !p.reply_root)
     },
     refetchOnWindowFocus: false,
     staleTime: 30_000,

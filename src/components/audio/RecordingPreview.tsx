@@ -10,6 +10,7 @@ interface RecordingPreviewProps {
   isPosting: boolean
   onReRecord: () => void
   onPost: () => void
+  postLabel?: string
 }
 
 export function RecordingPreview({
@@ -19,6 +20,7 @@ export function RecordingPreview({
   isPosting,
   onReRecord,
   onPost,
+  postLabel = 'Post',
 }: RecordingPreviewProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const blobUrlRef = useRef<string>('')
@@ -206,7 +208,7 @@ export function RecordingPreview({
           ) : (
             <Send size={14} />
           )}
-          {isPosting ? 'Posting...' : 'Post'}
+          {isPosting ? 'Posting...' : postLabel}
         </button>
       </div>
     </div>

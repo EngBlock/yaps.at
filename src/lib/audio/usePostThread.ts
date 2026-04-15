@@ -26,7 +26,7 @@ export function isNotFound(
 
 async function fetchPostThread(uri: string): Promise<PostThreadResponse> {
   const res = await fetch(
-    `${APPVIEW_URL}/xrpc/at.yaps.audio.getPostThread?uri=${encodeURIComponent(uri)}&depth=0`,
+    `${APPVIEW_URL}/xrpc/at.yaps.audio.getPostThread?uri=${encodeURIComponent(uri)}&depth=1`,
   )
   if (!res.ok) throw new Error(`getPostThread failed: ${res.status}`)
   return res.json()

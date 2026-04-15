@@ -56,11 +56,16 @@ export function useCreatePost() {
 
       return response.data
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       // Give the appview a moment to ingest the record from the firehose
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['globalFeed'] })
         queryClient.invalidateQueries({ queryKey: ['authorFeed'] })
+        if (variables.reply) {
+          queryClient.invalidateQueries({
+            queryKey: ['postThread', variables.reply.parent.uri],
+          })
+        }
       }, 1500)
     },
   })
