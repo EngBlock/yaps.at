@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 
 export type RecorderState = 'idle' | 'requesting' | 'recording' | 'recorded' | 'error'
 
-const MAX_DURATION_MS = 300_000
+export const MAX_DURATION_MS = 300_000
 const MAX_SIZE_BYTES = 4_800_000
 
 function getPreferredMimeType(): string {

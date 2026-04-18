@@ -19,22 +19,26 @@ export interface UsePostPlayback {
   seek: (fraction: number) => void
   audioSrc: string
   pendingPlay: boolean
+  unavailable: boolean
 }
 
 /**
  * Wraps useAudioPlayer with PDS resolution and a deferred-play intent:
  * if the user taps play before the DID document has resolved to a PDS URL,
  * the intent is queued and fired once the audio src becomes available.
+ * If the DID fails to resolve, `unavailable` is set so callers can render
+ * an error state instead of a spinner that never resolves.
  */
 export function usePostPlayback({
   authorDid,
   blobCid,
   durationMs,
 }: UsePostPlaybackArgs): UsePostPlayback {
-  const { data: pdsUrl } = useQuery({
+  const { data: pdsUrl, isError: pdsError } = useQuery({
     queryKey: ['pds', authorDid],
     queryFn: () => resolvePdsUrl(authorDid),
     staleTime: Infinity,
+    retry: 2,
   })
 
   const audioSrc = pdsUrl ? getAudioBlobUrl(pdsUrl, authorDid, blobCid) : ''
@@ -43,19 +47,24 @@ export function usePostPlayback({
   const pendingPlayRef = useRef(false)
 
   useEffect(() => {
+    if (pdsError) {
+      pendingPlayRef.current = false
+      return
+    }
     if (pendingPlayRef.current && audioSrc) {
       pendingPlayRef.current = false
       player.toggle()
     }
-  }, [audioSrc, player])
+  }, [audioSrc, player, pdsError])
 
   const toggle = useCallback(() => {
+    if (pdsError) return
     if (!audioSrc) {
       pendingPlayRef.current = true
       return
     }
     player.toggle()
-  }, [audioSrc, player])
+  }, [audioSrc, player, pdsError])
 
   return {
     isPlaying: player.isPlaying,
@@ -65,6 +74,7 @@ export function usePostPlayback({
     seek: player.seek,
     toggle,
     audioSrc,
-    pendingPlay: !audioSrc && pendingPlayRef.current,
+    pendingPlay: !audioSrc && !pdsError && pendingPlayRef.current,
+    unavailable: pdsError,
   }
 }

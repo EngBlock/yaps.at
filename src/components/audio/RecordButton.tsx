@@ -1,6 +1,9 @@
 import { Loader2 } from 'lucide-react'
 import { formatDuration } from '#/lib/audio/format'
+import { MAX_DURATION_MS } from '#/lib/audio/useRecorder'
 import type { RecorderState } from '#/lib/audio/useRecorder'
+
+const COUNTDOWN_THRESHOLD_MS = 30_000
 
 interface RecordButtonProps {
   state: RecorderState
@@ -14,6 +17,7 @@ export function RecordButton({ state, duration, onStart, onStop }: RecordButtonP
     return (
       <div className="flex flex-col items-center gap-3">
         <button
+          type="button"
           disabled
           aria-label="Waiting for microphone access"
           className="relative flex h-20 w-20 items-center justify-center rounded-full"
@@ -38,9 +42,14 @@ export function RecordButton({ state, duration, onStart, onStop }: RecordButtonP
   }
 
   if (state === 'recording') {
+    const remainingMs = Math.max(0, MAX_DURATION_MS - duration)
+    const secondsLeft = Math.ceil(remainingMs / 1000)
+    const warning = remainingMs <= COUNTDOWN_THRESHOLD_MS
+
     return (
       <div className="flex flex-col items-center gap-3">
         <button
+          type="button"
           onClick={onStop}
           aria-label="Stop recording"
           aria-pressed="true"
@@ -59,9 +68,22 @@ export function RecordButton({ state, duration, onStart, onStop }: RecordButtonP
             style={{ background: '#e53935' }}
           />
         </button>
-        <span className="font-mono text-sm font-medium" style={{ color: 'var(--sea-ink)' }}>
+        <span
+          className={`font-mono text-sm font-medium tabular-nums ${warning ? 'animate-pulse' : ''}`}
+          style={{ color: warning ? 'var(--palm)' : 'var(--sea-ink)' }}
+        >
           {formatDuration(duration)}
         </span>
+        {warning && (
+          <span
+            className="text-xs font-medium"
+            style={{ color: 'var(--palm)' }}
+            role="status"
+            aria-live="polite"
+          >
+            {secondsLeft}s left — recording will stop automatically
+          </span>
+        )}
       </div>
     )
   }
@@ -69,6 +91,7 @@ export function RecordButton({ state, duration, onStart, onStop }: RecordButtonP
   return (
     <div className="flex flex-col items-center gap-3">
       <button
+        type="button"
         onClick={onStart}
         aria-label="Start recording"
         aria-pressed="false"

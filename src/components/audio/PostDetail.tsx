@@ -95,25 +95,37 @@ export function PostDetail({ post }: PostDetailProps) {
             isPlaying={view.isPlaying}
             isBuffering={view.isBuffering || view.pendingPlay}
             onToggle={view.toggle}
+            disabled={view.unavailable}
             size={72}
           />
 
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <div className="h-20">
-              <WaveformDisplay
-                waveform={view.waveformBars}
-                progress={view.progress}
-                onSeek={view.audioSrc ? view.seek : undefined}
-                shape="cone"
-              />
-            </div>
-            <div
-              className="flex items-center justify-between font-mono text-xs tabular-nums"
-              style={{ color: 'var(--sea-ink-soft)' }}
-            >
-              <span>{formatDuration(view.currentMs)}</span>
-              <span>{formatDuration(post.duration)}</span>
-            </div>
+            {view.unavailable ? (
+              <p
+                className="py-6 text-sm italic"
+                style={{ color: 'var(--sea-ink-soft)' }}
+              >
+                Audio unavailable — couldn't reach {view.handle}'s data server.
+              </p>
+            ) : (
+              <>
+                <div className="h-20">
+                  <WaveformDisplay
+                    waveform={view.waveformBars}
+                    progress={view.progress}
+                    onSeek={view.audioSrc ? view.seek : undefined}
+                    shape="cone"
+                  />
+                </div>
+                <div
+                  className="flex items-center justify-between font-mono text-xs tabular-nums"
+                  style={{ color: 'var(--sea-ink-soft)' }}
+                >
+                  <span>{formatDuration(view.currentMs)}</span>
+                  <span>{formatDuration(post.duration)}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
