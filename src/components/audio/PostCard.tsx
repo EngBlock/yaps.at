@@ -76,22 +76,32 @@ export function PostCard({ post }: PostCardProps) {
           isPlaying={view.isPlaying}
           isBuffering={view.isBuffering || view.pendingPlay}
           onToggle={view.toggle}
+          disabled={view.unavailable}
         />
 
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="min-w-0 flex-1">
-            <WaveformDisplay
-              waveform={view.waveformBars}
-              progress={view.progress}
-              onSeek={view.audioSrc ? view.seek : undefined}
-              shape="cone"
-            />
+            {view.unavailable ? (
+              <p
+                className="text-xs italic"
+                style={{ color: 'var(--sea-ink-soft)' }}
+              >
+                Audio unavailable — couldn't reach {view.handle}'s data server
+              </p>
+            ) : (
+              <WaveformDisplay
+                waveform={view.waveformBars}
+                progress={view.progress}
+                onSeek={view.audioSrc ? view.seek : undefined}
+                shape="cone"
+              />
+            )}
           </div>
           <span
             className="shrink-0 font-mono text-xs font-medium tabular-nums"
             style={{ color: 'var(--sea-ink-soft)' }}
           >
-            {timeLabel}
+            {view.unavailable ? '—' : timeLabel}
           </span>
         </div>
       </div>

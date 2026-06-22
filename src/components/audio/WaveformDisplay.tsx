@@ -85,11 +85,54 @@ export function WaveformDisplay({
     onSeek(Math.max(0, Math.min(1, fraction)))
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!onSeek) return
+    const step = e.shiftKey ? 0.1 : 0.05
+    let next: number | null = null
+    switch (e.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        next = clamped - step
+        break
+      case 'ArrowRight':
+      case 'ArrowUp':
+        next = clamped + step
+        break
+      case 'Home':
+        next = 0
+        break
+      case 'End':
+        next = 1
+        break
+      case 'PageDown':
+        next = clamped - 0.1
+        break
+      case 'PageUp':
+        next = clamped + 0.1
+        break
+    }
+    if (next !== null) {
+      e.preventDefault()
+      onSeek(Math.max(0, Math.min(1, next)))
+    }
+  }
+
+  const interactive = !!onSeek
+  const percent = Math.round(clamped * 100)
+
   return (
     <div
       className="relative h-12"
-      style={{ cursor: onSeek ? 'pointer' : 'default' }}
+      style={{ cursor: interactive ? 'pointer' : 'default' }}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role={interactive ? 'slider' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      aria-label={interactive ? 'Seek audio' : undefined}
+      aria-valuemin={interactive ? 0 : undefined}
+      aria-valuemax={interactive ? 100 : undefined}
+      aria-valuenow={interactive ? percent : undefined}
+      aria-valuetext={interactive ? `${percent}%` : undefined}
     >
       {renderBars('var(--line)')}
       <div

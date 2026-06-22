@@ -103,7 +103,23 @@ export function Composer({ replyTo }: ComposerProps) {
       )}
 
       {recorder.error && (
-        <p className="mt-3 text-center text-sm" style={{ color: 'var(--palm)' }}>{recorder.error}</p>
+        <div className="mt-3 flex flex-col items-center gap-2">
+          <p className="text-center text-sm" style={{ color: 'var(--palm)' }}>
+            {recorder.error}
+          </p>
+          <button
+            type="button"
+            onClick={recorder.start}
+            className="btn btn-sm"
+            style={{
+              borderColor: 'var(--line)',
+              background: 'var(--surface)',
+              color: 'var(--sea-ink)',
+            }}
+          >
+            Try again
+          </button>
+        </div>
       )}
 
       {createPost.isError && (

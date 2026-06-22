@@ -141,6 +141,7 @@ export function RecordingPreview({
     [audioDuration],
   )
 
+  const isAnalyzing = waveform === null
   const displayWaveform = waveform ?? Array(48).fill(30)
 
   // Show elapsed while playing, total duration when idle.
@@ -163,7 +164,7 @@ export function RecordingPreview({
           )}
         </button>
 
-        <div className="min-w-0 flex-1">
+        <div className={`min-w-0 flex-1 ${isAnalyzing ? 'animate-pulse' : ''}`}>
           <WaveformDisplay
             waveform={displayWaveform}
             progress={progress}
@@ -174,8 +175,9 @@ export function RecordingPreview({
         <span
           className="shrink-0 font-mono text-xs font-medium tabular-nums"
           style={{ color: 'var(--sea-ink-soft)' }}
+          aria-live="polite"
         >
-          {timeLabel}
+          {isAnalyzing ? 'Analyzing…' : timeLabel}
         </span>
       </div>
 

@@ -1,14 +1,17 @@
+import { useCallback } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { useAuthorFeed } from '#/lib/audio/useGlobalFeed'
 import { PostCard } from '#/components/audio/PostCard'
+import { PullToRefresh } from '#/components/PullToRefresh'
 import { publicAgent } from '#/lib/atproto/public-agent'
 
 export const Route = createFileRoute('/$actor/')({ component: ProfilePage })
 
 function ProfilePage() {
   const { actor } = Route.useParams()
+  const queryClient = useQueryClient()
 
   const profileQuery = useQuery({
     queryKey: ['profile', actor],
@@ -22,28 +25,37 @@ function ProfilePage() {
   const authorDid = profileQuery.data?.did ?? null
   const feed = useAuthorFeed(authorDid)
 
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['profile', actor] }),
+      queryClient.invalidateQueries({ queryKey: ['authorFeed'] }),
+    ])
+  }, [queryClient, actor])
+
   return (
-    <main className="page-wrap min-h-screen px-4 pb-8 pt-14">
-      <div className="rise-in mx-auto flex max-w-lg flex-col gap-4">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 self-start text-sm"
-          style={{ color: 'var(--sea-ink-soft)' }}
-        >
-          <ArrowLeft size={14} />
-          Back to feed
-        </Link>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <main className="page-wrap min-h-screen px-4 pb-8 pt-14">
+        <div className="rise-in mx-auto flex max-w-lg flex-col gap-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 self-start text-sm"
+            style={{ color: 'var(--sea-ink-soft)' }}
+          >
+            <ArrowLeft size={14} />
+            Back to feed
+          </Link>
 
-        <ProfileHeader
-          actor={actor}
-          isLoading={profileQuery.isLoading}
-          isError={profileQuery.isError}
-          profile={profileQuery.data}
-        />
+          <ProfileHeader
+            actor={actor}
+            isLoading={profileQuery.isLoading}
+            isError={profileQuery.isError}
+            profile={profileQuery.data}
+          />
 
-        {authorDid && <AuthorPosts feed={feed} />}
-      </div>
-    </main>
+          {authorDid && <AuthorPosts feed={feed} />}
+        </div>
+      </main>
+    </PullToRefresh>
   )
 }
 
@@ -136,8 +148,21 @@ function AuthorPosts({ feed }: { feed: ReturnType<typeof useAuthorFeed> }) {
 
   if (feed.isError) {
     return (
-      <div className="py-8 text-center">
+      <div className="flex flex-col items-center gap-2 py-8 text-center">
         <p className="text-sm text-red-500">Failed to load posts.</p>
+        <button
+          type="button"
+          onClick={() => feed.refetch()}
+          disabled={feed.isFetching}
+          className="btn btn-sm"
+          style={{
+            borderColor: 'var(--line)',
+            background: 'var(--surface)',
+            color: 'var(--sea-ink)',
+          }}
+        >
+          {feed.isFetching ? 'Retrying…' : 'Try again'}
+        </button>
       </div>
     )
   }

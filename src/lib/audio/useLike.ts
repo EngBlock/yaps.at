@@ -7,6 +7,12 @@ export function useLike() {
   const { agent, did } = useAuth()
   const queryClient = useQueryClient()
 
+  const invalidateFeeds = () => {
+    queryClient.invalidateQueries({ queryKey: ['globalFeed'] })
+    queryClient.invalidateQueries({ queryKey: ['authorFeed'] })
+    queryClient.invalidateQueries({ queryKey: ['postThread'] })
+  }
+
   const like = useMutation({
     mutationFn: async (subject: StrongRef) => {
       if (!agent || !did) throw new Error('Not authenticated')
@@ -25,9 +31,7 @@ export function useLike() {
 
       return response.data
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feed'] })
-    },
+    onSuccess: invalidateFeeds,
   })
 
   const unlike = useMutation({
@@ -40,9 +44,7 @@ export function useLike() {
         rkey,
       })
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feed'] })
-    },
+    onSuccess: invalidateFeeds,
   })
 
   return { like, unlike }
